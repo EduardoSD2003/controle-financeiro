@@ -94,4 +94,6 @@ async function initApp() {
   await Promise.all([renderOverview(), renderTransactionsSection(), loadInvestments()]);
 }
 
-initApp();
+// Só inicia depois que todos os <script> da página (categories.js, transactions.js,
+// investments.js, dashboard.js) já executaram — evita chamar funções que ainda não existem.
+document.addEventListener('DOMContentLoaded', initApp);
