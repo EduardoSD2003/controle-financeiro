@@ -1,4 +1,4 @@
-# Controle Financeiro
+# Farofa Fin
 
 App para controlar gastos, receitas e investimentos, com login por email e
 lançamento de transações também pelo Telegram. Site 100% estático
@@ -82,7 +82,7 @@ transações.
    `https://SEU_USUARIO.github.io/SEU_REPOSITORIO/`
 
 > **Cache do navegador:** os arquivos CSS/JS são carregados com uma
-> versão na URL (`?v=8`). Se você editar esses arquivos no futuro, aumente
+> versão na URL (`?v=9`). Se você editar esses arquivos no futuro, aumente
 > esse número em [`index.html`](index.html) e [`app.html`](app.html) —
 > assim o navegador de quem já visitou o site busca a versão nova em vez
 > de usar a antiga que guardou em cache.
@@ -98,6 +98,11 @@ as perguntas do bot.
 2. Envie `/newbot`, escolha um nome e um usuário (precisa terminar em
    `bot`, ex: `meucontrolefinanceiro_bot`).
 3. O BotFather te dá um **token** (algo como `123456:ABC-DEF...`). Guarde.
+4. (Opcional) Pra colocar a logo como foto de perfil do bot: envie
+   `/setuserpic` pro BotFather, escolha o bot e mande o arquivo
+   [`assets/logo.png`](assets/logo.png) deste projeto. Isso só dá pra
+   fazer conversando com o BotFather — não existe uma forma de configurar
+   isso automaticamente por fora.
 
 ### 4.2. Instalar o Supabase CLI e logar
 
@@ -178,6 +183,8 @@ Deve responder `{"ok":true,"result":true,...}`.
 ```
 index.html                             Tela de login/cadastro
 app.html                                App principal (todas as abas)
+assets/logo.svg                         Logo do app (favicon e topo das telas)
+assets/logo.png                         Mesma logo em PNG (foto de perfil do bot)
 css/style.css                           Visual do site
 js/config.js                            Chaves do Supabase (você preenche)
 js/supabaseClient.js                    Inicialização do cliente Supabase

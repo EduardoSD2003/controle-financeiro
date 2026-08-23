@@ -134,9 +134,17 @@ select:focus {
 }
 
 .auth-logo {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
   margin: 0 0 1.5rem;
   font-size: 1.4rem;
+}
+
+.auth-logo .logo-img {
+  width: 36px;
+  height: 36px;
 }
 
 .tabs {
@@ -206,8 +214,17 @@ select:focus {
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-weight: 700;
   white-space: nowrap;
+}
+
+.logo-img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
 }
 
 .topbar .tabs {
