@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle Financeiro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <span class="logo">💰 Controle Financeiro</span>
+      <nav class="tabs" id="main-tabs">
+        <button class="tab-btn active" data-section="overview">Visão Geral</button>
+        <button class="tab-btn" data-section="transactions">Transações</button>
+        <button class="tab-btn" data-section="investments">Investimentos</button>
+        <button class="tab-btn" data-section="categories">Categorias</button>
+      </nav>
+      <div class="topbar-user">
+        <span id="user-email"></span>
+        <button id="logout-btn" class="btn btn-ghost">Sair</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- Visão Geral -->
+      <section id="section-overview" class="section active">
+        <div class="section-header">
+          <h2>Visão Geral</h2>
+          <div class="month-picker">
+            <button id="prev-month" class="btn btn-ghost">‹</button>
+            <span id="current-month-label"></span>
+            <button id="next-month" class="btn btn-ghost">›</button>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="stat-card">
+            <span class="stat-label">Receitas do mês</span>
+            <span class="stat-value positive" id="stat-income">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Despesas do mês</span>
+            <span class="stat-value negative" id="stat-expense">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saldo do mês</span>
+            <span class="stat-value" id="stat-balance">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Total investido</span>
+            <span class="stat-value" id="stat-invested">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <div class="panel">
+            <h3>Gastos por categoria</h3>
+            <div class="chart-wrap">
+              <canvas id="category-chart"></canvas>
+            </div>
+            <p id="chart-empty" class="empty-msg hidden">Nenhum gasto neste mês ainda.</p>
+          </div>
+          <div class="panel">
+            <h3>Últimas transações</h3>
+            <ul id="recent-list" class="tx-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Transações -->
+      <section id="section-transactions" class="section">
+        <div class="section-header">
+          <h2>Transações</h2>
+        </div>
+
+        <form id="transaction-form" class="inline-form">
+          <select id="tx-type" required>
+            <option value="despesa">Despesa</option>
+            <option value="receita">Receita</option>
+          </select>
+          <select id="tx-category" required></select>
+          <input type="number" id="tx-amount" placeholder="Valor" step="0.01" min="0.01" required />
+          <input type="text" id="tx-description" placeholder="Descrição (opcional)" />
+          <input type="date" id="tx-date" required />
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+
+        <div class="section-header">
+          <div class="month-picker">
+            <button id="tx-prev-month" class="btn btn-ghost">‹</button>
+            <span id="tx-month-label"></span>
+            <button id="tx-next-month" class="btn btn-ghost">›</button>
+          </div>
+        </div>
+
+        <ul id="transactions-list" class="tx-list"></ul>
+        <p id="transactions-empty" class="empty-msg hidden">Nenhuma transação neste mês.</p>
+      </section>
+
+      <!-- Investimentos -->
+      <section id="section-investments" class="section">
+        <div class="section-header">
+          <h2>Investimentos</h2>
+        </div>
+
+        <form id="investment-form" class="inline-form">
+          <input type="text" id="inv-name" placeholder="Nome (ex: Tesouro Selic)" required />
+          <select id="inv-type" required>
+            <option>Renda Fixa</option>
+            <option>Tesouro Direto</option>
+            <option>Ações</option>
+            <option>Fundos Imobiliários</option>
+            <option>Criptomoedas</option>
+            <option>Outros</option>
+          </select>
+          <input type="number" id="inv-amount-invested" placeholder="Valor investido" step="0.01" min="0" required />
+          <input type="number" id="inv-current-value" placeholder="Valor atual" step="0.01" min="0" required />
+          <input type="date" id="inv-date" required />
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+
+        <div class="cards-grid">
+          <div class="stat-card">
+            <span class="stat-label">Total investido</span>
+            <span class="stat-value" id="inv-stat-invested">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Valor atual</span>
+            <span class="stat-value" id="inv-stat-current">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Rentabilidade</span>
+            <span class="stat-value" id="inv-stat-return">0,00%</span>
+          </div>
+        </div>
+
+        <ul id="investments-list" class="tx-list"></ul>
+        <p id="investments-empty" class="empty-msg hidden">Nenhum investimento cadastrado ainda.</p>
+      </section>
+
+      <!-- Categorias -->
+      <section id="section-categories" class="section">
+        <div class="section-header">
+          <h2>Categorias</h2>
+        </div>
+
+        <form id="category-form" class="inline-form">
+          <input type="text" id="cat-name" placeholder="Nome" required />
+          <select id="cat-type" required>
+            <option value="despesa">Despesa</option>
+            <option value="receita">Receita</option>
+          </select>
+          <input type="text" id="cat-icon" placeholder="Ícone (emoji)" maxlength="4" value="💰" />
+          <input type="color" id="cat-color" value="#6366f1" />
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+
+        <div class="categories-columns">
+          <div>
+            <h3>Despesas</h3>
+            <ul id="categories-expense-list" class="category-list"></ul>
+          </div>
+          <div>
+            <h3>Receitas</h3>
+            <ul id="categories-income-list" class="category-list"></ul>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/categories.js"></script>
+  <script src="js/transactions.js"></script>
+  <script src="js/investments.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

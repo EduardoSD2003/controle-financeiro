@@ -1,0 +1,97 @@
+// Estado compartilhado e inicialização geral do app (app.html)
+
+const AppState = {
+  user: null,
+  categories: [], // todas as categorias do usuário (despesa + receita)
+  selectedMonth: startOfMonth(new Date()), // mês exibido na Visão Geral e em Transações
+};
+
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+function monthRange(date) {
+  const start = new Date(date.getFullYear(), date.getMonth(), 1);
+  const end = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  return { startISO: toISODate(start), endISO: toISODate(end) };
+}
+
+function toISODate(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function monthLabel(date) {
+  const label = date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function formatBRL(value) {
+  return (Number(value) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+}
+
+function formatDateBR(isoDate) {
+  const [y, m, d] = isoDate.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function updateMonthLabels() {
+  const label = monthLabel(AppState.selectedMonth);
+  document.getElementById('current-month-label').textContent = label;
+  document.getElementById('tx-month-label').textContent = label;
+}
+
+function changeMonth(delta) {
+  const d = AppState.selectedMonth;
+  AppState.selectedMonth = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+  updateMonthLabels();
+  refreshMonthDependentViews();
+}
+
+function refreshMonthDependentViews() {
+  if (typeof renderOverview === 'function') renderOverview();
+  if (typeof renderTransactionsSection === 'function') renderTransactionsSection();
+}
+
+// --- Navegação entre seções ---
+document.getElementById('main-tabs').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+
+  document.querySelectorAll('#main-tabs .tab-btn').forEach((b) => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
+  document.getElementById('section-' + btn.dataset.section).classList.add('active');
+});
+
+document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
+document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
+document.getElementById('tx-prev-month').addEventListener('click', () => changeMonth(-1));
+document.getElementById('tx-next-month').addEventListener('click', () => changeMonth(1));
+
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = 'index.html';
+});
+
+// --- Inicialização ---
+async function initApp() {
+  const { data } = await supabaseClient.auth.getSession();
+  if (!data.session) {
+    window.location.href = 'index.html';
+    return;
+  }
+  AppState.user = data.session.user;
+  document.getElementById('user-email').textContent = AppState.user.email;
+
+  const today = toISODate(new Date());
+  document.getElementById('tx-date').value = today;
+  document.getElementById('inv-date').value = today;
+
+  updateMonthLabels();
+
+  await loadCategories();
+  await Promise.all([renderOverview(), renderTransactionsSection(), loadInvestments()]);
+}
+
+initApp();

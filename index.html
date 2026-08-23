@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Controle Financeiro — Entrar</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <main class="auth-card">
+    <h1 class="auth-logo">💰 Controle Financeiro</h1>
+
+    <div class="tabs" id="auth-tabs">
+      <button class="tab-btn active" data-tab="login">Entrar</button>
+      <button class="tab-btn" data-tab="signup">Criar conta</button>
+    </div>
+
+    <form id="login-form" class="auth-form">
+      <label>
+        Email
+        <input type="email" id="login-email" required autocomplete="email" />
+      </label>
+      <label>
+        Senha
+        <input type="password" id="login-password" required autocomplete="current-password" />
+      </label>
+      <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
+
+    <form id="signup-form" class="auth-form hidden">
+      <label>
+        Nome
+        <input type="text" id="signup-name" required autocomplete="name" />
+      </label>
+      <label>
+        Email
+        <input type="email" id="signup-email" required autocomplete="email" />
+      </label>
+      <label>
+        Senha
+        <input type="password" id="signup-password" required minlength="6" autocomplete="new-password" />
+      </label>
+      <button type="submit" class="btn btn-primary">Criar conta</button>
+    </form>
+
+    <p id="auth-message" class="auth-message hidden"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabaseClient.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
