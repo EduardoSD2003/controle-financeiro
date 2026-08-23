@@ -98,11 +98,13 @@ as perguntas do bot.
 2. Envie `/newbot`, escolha um nome e um usuário (precisa terminar em
    `bot`, ex: `meucontrolefinanceiro_bot`).
 3. O BotFather te dá um **token** (algo como `123456:ABC-DEF...`). Guarde.
-4. (Opcional) Pra colocar a logo como foto de perfil do bot: envie
-   `/setuserpic` pro BotFather, escolha o bot e mande o arquivo
-   [`assets/logo.png`](assets/logo.png) deste projeto. Isso só dá pra
-   fazer conversando com o BotFather — não existe uma forma de configurar
-   isso automaticamente por fora.
+4. (Opcional) Pra colocar/trocar a foto de perfil do bot, dá pra fazer
+   direto pela API (não precisa falar com o BotFather):
+   ```bash
+   curl -X POST "https://api.telegram.org/botSEU_BOT_TOKEN/setMyProfilePhoto" \
+     -F 'photo={"type":"static","photo":"attach://photofile"}' \
+     -F "photofile=@./assets/logo-telegram.jpg;type=image/jpeg"
+   ```
 
 ### 4.2. Instalar o Supabase CLI e logar
 
@@ -184,7 +186,8 @@ Deve responder `{"ok":true,"result":true,...}`.
 index.html                             Tela de login/cadastro
 app.html                                App principal (todas as abas)
 assets/logo.svg                         Logo do app (favicon e topo das telas)
-assets/logo.png                         Mesma logo em PNG (foto de perfil do bot)
+assets/logo.png                         Mesma logo em PNG
+assets/logo-telegram.jpg                Mesma logo em JPG (foto de perfil do bot no Telegram)
 css/style.css                           Visual do site
 js/config.js                            Chaves do Supabase (você preenche)
 js/supabaseClient.js                    Inicialização do cliente Supabase
