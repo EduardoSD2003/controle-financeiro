@@ -1,5 +1,10 @@
 // Aba "Gráficos": receitas x despesas, saldo, categorias, investimentos e estatísticas anuais
 
+// Tema escuro: troca as cores padrão do Chart.js (texto/linhas escuras
+// por padrão, invisíveis no fundo escuro do app).
+Chart.defaults.color = '#9aa0aa';
+Chart.defaults.borderColor = '#35373d';
+
 let monthlyChart = null;
 let balanceLineChart = null;
 let chartsCategoryChart = null;

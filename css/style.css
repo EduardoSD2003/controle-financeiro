@@ -1,13 +1,13 @@
 :root {
-  --bg: #f5f6f8;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --text: #1f2430;
-  --text-muted: #6b7280;
+  --bg: #1a1b1e;
+  --surface: #232428;
+  --border: #35373d;
+  --text: #e7e8ea;
+  --text-muted: #9aa0aa;
   --primary: #6366f1;
   --primary-dark: #4f46e5;
-  --positive: #16a34a;
-  --negative: #dc2626;
+  --positive: #4ade80;
+  --negative: #f87171;
   --radius: 10px;
 }
 
@@ -85,12 +85,12 @@ select:focus {
 }
 
 .btn-icon:hover {
-  background: #fee2e2;
+  background: rgba(248, 113, 113, 0.15);
   color: var(--negative);
 }
 
 .btn-icon.edit:hover {
-  background: #eef2ff;
+  background: rgba(99, 102, 241, 0.18);
   color: var(--primary);
 }
 
@@ -130,7 +130,7 @@ select:focus {
   padding: 2.5rem;
   width: 100%;
   max-width: 380px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .auth-logo {
@@ -448,7 +448,7 @@ select:focus {
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.6rem;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
 .emoji-group + .emoji-group {
