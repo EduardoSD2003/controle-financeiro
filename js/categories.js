@@ -26,6 +26,7 @@ async function loadCategories() {
   AppState.categories = data;
   renderCategories();
   populateCategorySelect();
+  if (typeof populateRecCategorySelect === 'function') populateRecCategorySelect();
 }
 
 function renderCategories() {

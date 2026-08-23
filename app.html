@@ -13,6 +13,8 @@
       <nav class="tabs" id="main-tabs">
         <button class="tab-btn active" data-section="overview">Visão Geral</button>
         <button class="tab-btn" data-section="transactions">Transações</button>
+        <button class="tab-btn" data-section="charts">Gráficos</button>
+        <button class="tab-btn" data-section="recurring">Recorrências</button>
         <button class="tab-btn" data-section="investments">Investimentos</button>
         <button class="tab-btn" data-section="categories">Categorias</button>
       </nav>
@@ -83,7 +85,13 @@
           <input type="number" id="tx-amount" placeholder="Valor" step="0.01" min="0.01" required />
           <input type="text" id="tx-description" placeholder="Descrição (opcional)" />
           <input type="date" id="tx-date" required />
+          <label class="inline-checkbox">
+            <input type="checkbox" id="tx-installment-toggle" />
+            Parcelar
+          </label>
+          <input type="number" id="tx-installment-count" placeholder="Nº de parcelas" min="2" max="60" class="short-input hidden" />
           <button type="submit" class="btn btn-primary">Adicionar</button>
+          <button type="button" id="tx-cancel-edit" class="btn btn-ghost hidden">Cancelar edição</button>
         </form>
 
         <div class="section-header">
@@ -96,6 +104,69 @@
 
         <ul id="transactions-list" class="tx-list"></ul>
         <p id="transactions-empty" class="empty-msg hidden">Nenhuma transação neste mês.</p>
+      </section>
+
+      <!-- Gráficos -->
+      <section id="section-charts" class="section">
+        <div class="section-header">
+          <h2>Gráficos</h2>
+          <div class="month-picker">
+            <button id="charts-prev-month" class="btn btn-ghost">‹</button>
+            <span id="charts-month-label"></span>
+            <button id="charts-next-month" class="btn btn-ghost">›</button>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:1rem">
+          <h3>Receitas x Despesas — últimos 6 meses</h3>
+          <div class="chart-wrap chart-wrap-wide">
+            <canvas id="monthly-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <div class="panel">
+            <h3>Gastos por categoria no mês</h3>
+            <div class="chart-wrap">
+              <canvas id="charts-category-chart"></canvas>
+            </div>
+            <p id="charts-category-empty" class="empty-msg hidden">Nenhum gasto neste mês ainda.</p>
+          </div>
+          <div class="panel">
+            <h3>Investido x Valor atual</h3>
+            <div class="chart-wrap">
+              <canvas id="investments-chart"></canvas>
+            </div>
+            <p id="charts-investments-empty" class="empty-msg hidden">Nenhum investimento cadastrado ainda.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recorrências -->
+      <section id="section-recurring" class="section">
+        <div class="section-header">
+          <h2>Recorrências</h2>
+        </div>
+        <p class="empty-msg" style="text-align:left;padding:0 0 0.8rem">
+          Contas fixas lançadas automaticamente todo mês (aluguel, assinaturas, salário...).
+          Ao entrar no app ou navegar entre meses, as transações desse mês são geradas sozinhas.
+        </p>
+
+        <form id="recurring-form" class="inline-form">
+          <select id="rec-type" required>
+            <option value="despesa">Despesa</option>
+            <option value="receita">Receita</option>
+          </select>
+          <select id="rec-category" required></select>
+          <input type="number" id="rec-amount" placeholder="Valor" step="0.01" min="0.01" required />
+          <input type="text" id="rec-description" placeholder="Descrição (opcional)" />
+          <input type="number" id="rec-day" placeholder="Dia do mês" min="1" max="31" required class="short-input" />
+          <input type="date" id="rec-start-date" required />
+          <button type="submit" class="btn btn-primary">Adicionar</button>
+        </form>
+
+        <ul id="recurring-list" class="tx-list"></ul>
+        <p id="recurring-empty" class="empty-msg hidden">Nenhuma recorrência cadastrada ainda.</p>
       </section>
 
       <!-- Investimentos -->
@@ -182,7 +253,9 @@
   <script src="js/app.js"></script>
   <script src="js/categories.js"></script>
   <script src="js/transactions.js"></script>
+  <script src="js/recurring.js"></script>
   <script src="js/investments.js"></script>
   <script src="js/dashboard.js"></script>
+  <script src="js/charts.js"></script>
 </body>
 </html>

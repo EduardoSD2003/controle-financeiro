@@ -3,7 +3,8 @@
 const AppState = {
   user: null,
   categories: [], // todas as categorias do usuário (despesa + receita)
-  selectedMonth: startOfMonth(new Date()), // mês exibido na Visão Geral e em Transações
+  recurring: [], // recorrências ativas/pausadas
+  selectedMonth: startOfMonth(new Date()), // mês exibido em Visão Geral, Transações e Gráficos
 };
 
 function startOfMonth(date) {
@@ -34,22 +35,40 @@ function formatDateBR(isoDate) {
   return `${d}/${m}/${y}`;
 }
 
+// Soma meses a uma data "clampando" o dia (ex: 31/01 + 1 mês vira 28ou29/02, não estoura pra março)
+function addMonthsClamped(date, monthsToAdd) {
+  const targetMonthIndex = date.getMonth() + monthsToAdd;
+  const targetYear = date.getFullYear() + Math.floor(targetMonthIndex / 12);
+  const normalizedMonth = ((targetMonthIndex % 12) + 12) % 12;
+  const daysInTargetMonth = new Date(targetYear, normalizedMonth + 1, 0).getDate();
+  const day = Math.min(date.getDate(), daysInTargetMonth);
+  return new Date(targetYear, normalizedMonth, day);
+}
+
 function updateMonthLabels() {
   const label = monthLabel(AppState.selectedMonth);
   document.getElementById('current-month-label').textContent = label;
   document.getElementById('tx-month-label').textContent = label;
+  document.getElementById('charts-month-label').textContent = label;
 }
 
-function changeMonth(delta) {
+async function changeMonth(delta) {
   const d = AppState.selectedMonth;
   AppState.selectedMonth = new Date(d.getFullYear(), d.getMonth() + delta, 1);
   updateMonthLabels();
+  if (typeof ensureRecurringOccurrences === 'function') {
+    await ensureRecurringOccurrences(AppState.selectedMonth);
+  }
   refreshMonthDependentViews();
 }
 
 function refreshMonthDependentViews() {
   if (typeof renderOverview === 'function') renderOverview();
   if (typeof renderTransactionsSection === 'function') renderTransactionsSection();
+  const chartsSection = document.getElementById('section-charts');
+  if (chartsSection.classList.contains('active') && typeof renderChartsSection === 'function') {
+    renderChartsSection();
+  }
 }
 
 // --- Navegação entre seções ---
@@ -62,12 +81,18 @@ document.getElementById('main-tabs').addEventListener('click', (e) => {
 
   document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
   document.getElementById('section-' + btn.dataset.section).classList.add('active');
+
+  if (btn.dataset.section === 'charts' && typeof renderChartsSection === 'function') {
+    renderChartsSection();
+  }
 });
 
 document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));
 document.getElementById('next-month').addEventListener('click', () => changeMonth(1));
 document.getElementById('tx-prev-month').addEventListener('click', () => changeMonth(-1));
 document.getElementById('tx-next-month').addEventListener('click', () => changeMonth(1));
+document.getElementById('charts-prev-month').addEventListener('click', () => changeMonth(-1));
+document.getElementById('charts-next-month').addEventListener('click', () => changeMonth(1));
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
@@ -87,13 +112,23 @@ async function initApp() {
   const today = toISODate(new Date());
   document.getElementById('tx-date').value = today;
   document.getElementById('inv-date').value = today;
+  document.getElementById('rec-start-date').value = today;
 
   updateMonthLabels();
 
   await loadCategories();
+  await loadRecurring();
+
+  // Gera as recorrências do mês atual e dos 2 próximos, pra já aparecerem
+  // sem precisar navegar manualmente até lá.
+  await ensureRecurringOccurrences(AppState.selectedMonth);
+  await ensureRecurringOccurrences(addMonthsClamped(AppState.selectedMonth, 1));
+  await ensureRecurringOccurrences(addMonthsClamped(AppState.selectedMonth, 2));
+
   await Promise.all([renderOverview(), renderTransactionsSection(), loadInvestments()]);
 }
 
 // Só inicia depois que todos os <script> da página (categories.js, transactions.js,
-// investments.js, dashboard.js) já executaram — evita chamar funções que ainda não existem.
+// investments.js, dashboard.js, recurring.js, charts.js) já executaram — evita chamar
+// funções que ainda não existem.
 document.addEventListener('DOMContentLoaded', initApp);

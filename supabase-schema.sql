@@ -20,6 +20,20 @@ create table if not exists categories (
   created_at timestamptz not null default now()
 );
 
+-- Recorrências (contas fixas lançadas automaticamente todo mês)
+create table if not exists recurring_transactions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category_id uuid references categories(id) on delete set null,
+  type text not null check (type in ('despesa', 'receita')),
+  amount numeric(12, 2) not null check (amount > 0),
+  description text,
+  day_of_month int not null check (day_of_month between 1 and 31),
+  start_date date not null default current_date,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
 -- Transações (gastos e receitas do dia a dia)
 create table if not exists transactions (
   id uuid primary key default gen_random_uuid(),
@@ -29,6 +43,10 @@ create table if not exists transactions (
   amount numeric(12, 2) not null check (amount > 0),
   description text,
   date date not null default current_date,
+  installment_group_id uuid,
+  installment_number int,
+  installment_total int,
+  recurring_transaction_id uuid references recurring_transactions(id) on delete set null,
   created_at timestamptz not null default now()
 );
 
@@ -50,6 +68,7 @@ alter table profiles enable row level security;
 alter table categories enable row level security;
 alter table transactions enable row level security;
 alter table investments enable row level security;
+alter table recurring_transactions enable row level security;
 
 create policy "própria conta" on profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
@@ -61,6 +80,9 @@ create policy "próprias transações" on transactions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 create policy "próprios investimentos" on investments
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+create policy "próprias recorrências" on recurring_transactions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Quando um usuário se cadastra, cria o perfil e algumas categorias padrão

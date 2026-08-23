@@ -77,5 +77,5 @@ async function renderRecentTransactions() {
     return;
   }
 
-  data.forEach((tx) => list.appendChild(renderTxItem(tx)));
+  data.forEach((tx) => list.appendChild(renderRecentTxItem(tx)));
 }
