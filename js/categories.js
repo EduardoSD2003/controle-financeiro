@@ -1,16 +1,15 @@
 // CRUD de categorias (seção "Categorias" e select de transações)
 
-const EMOJI_OPTIONS = [
-  '💰', '💵', '💳', '🏦', '🐷',
-  '🍽️', '🍕', '☕', '🛒', '🍔',
-  '🚗', '🚌', '⛽', '🚕', '✈️',
-  '🏠', '🔌', '💡', '🔧', '🧹',
-  '💊', '🏥', '🦷', '💉', '🧴',
-  '🎮', '🎬', '🎵', '⚽', '🎉',
-  '👕', '👟', '🛍️', '💄', '📱',
-  '📚', '🎓', '✏️', '🖥️', '📦',
-  '💼', '➕', '🎁', '📈', '🏆',
-  '🐶', '🐱', '👶', '❤️', '🌱',
+const EMOJI_GROUPS = [
+  { label: 'Dinheiro', emojis: ['💰', '💵', '💳', '🏦', '🐷', '📈', '➕'] },
+  { label: 'Alimentação', emojis: ['🍽️', '🍕', '☕', '🛒', '🍔', '🍎', '🍺'] },
+  { label: 'Transporte', emojis: ['🚗', '🚌', '⛽', '🚕', '✈️', '🚲', '🚆'] },
+  { label: 'Casa', emojis: ['🏠', '🔌', '💡', '🔧', '🧹', '🛋️', '🔑'] },
+  { label: 'Saúde', emojis: ['💊', '🏥', '🦷', '💉', '🧴', '🧠', '🩺'] },
+  { label: 'Lazer', emojis: ['🎮', '🎬', '🎵', '⚽', '🎉', '📷', '🎲'] },
+  { label: 'Compras', emojis: ['👕', '👟', '🛍️', '💄', '📱', '💻', '⌚'] },
+  { label: 'Estudos e trabalho', emojis: ['📚', '🎓', '✏️', '🖥️', '📦', '💼', '📋'] },
+  { label: 'Outros', emojis: ['🎁', '🏆', '🐶', '🐱', '👶', '❤️', '🌱'] },
 ];
 
 async function loadCategories() {
@@ -67,7 +66,16 @@ const emojiPicker = document.getElementById('emoji-picker');
 const emojiPickerBtn = document.getElementById('cat-icon-btn');
 const emojiHiddenInput = document.getElementById('cat-icon');
 
-emojiPicker.innerHTML = EMOJI_OPTIONS.map((e) => `<button type="button" class="emoji-option">${e}</button>`).join('');
+emojiPicker.innerHTML = EMOJI_GROUPS.map(
+  (group) => `
+    <div class="emoji-group">
+      <span class="emoji-group-label">${group.label}</span>
+      <div class="emoji-grid">
+        ${group.emojis.map((e) => `<button type="button" class="emoji-option">${e}</button>`).join('')}
+      </div>
+    </div>
+  `
+).join('');
 
 emojiPickerBtn.addEventListener('click', (e) => {
   e.stopPropagation();

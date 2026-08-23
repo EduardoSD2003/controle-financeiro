@@ -364,22 +364,42 @@ select:focus {
   top: calc(100% + 6px);
   left: 0;
   z-index: 20;
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 2px;
-  width: 230px;
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 0.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 0.6rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
+}
+
+.emoji-group + .emoji-group {
+  margin-top: 0.6rem;
+}
+
+.emoji-group-label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  padding: 0.15rem 0.3rem 0.35rem;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
 
 .emoji-option {
   background: none;
   border: none;
-  font-size: 1.25rem;
-  padding: 0.3rem;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.4rem 0;
   border-radius: 6px;
 }
 
