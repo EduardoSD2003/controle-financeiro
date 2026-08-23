@@ -1,5 +1,18 @@
 // CRUD de categorias (seção "Categorias" e select de transações)
 
+const EMOJI_OPTIONS = [
+  '💰', '💵', '💳', '🏦', '🐷',
+  '🍽️', '🍕', '☕', '🛒', '🍔',
+  '🚗', '🚌', '⛽', '🚕', '✈️',
+  '🏠', '🔌', '💡', '🔧', '🧹',
+  '💊', '🏥', '🦷', '💉', '🧴',
+  '🎮', '🎬', '🎵', '⚽', '🎉',
+  '👕', '👟', '🛍️', '💄', '📱',
+  '📚', '🎓', '✏️', '🖥️', '📦',
+  '💼', '➕', '🎁', '📈', '🏆',
+  '🐶', '🐱', '👶', '❤️', '🌱',
+];
+
 async function loadCategories() {
   const { data, error } = await supabaseClient
     .from('categories')
@@ -26,8 +39,11 @@ function renderCategories() {
     const li = document.createElement('li');
     li.className = 'category-item';
     li.innerHTML = `
-      <span class="category-badge" style="background:${cat.color}22;color:${cat.color}">
-        ${cat.icon} ${cat.name}
+      <span class="category-main">
+        <span class="category-badge" style="background:${cat.color}22;color:${cat.color}">
+          ${cat.icon} ${cat.name}
+        </span>
+        ${cat.description ? `<span class="category-description">${cat.description}</span>` : ''}
       </span>
       <button class="btn btn-icon" data-delete-category="${cat.id}" title="Excluir">✕</button>
     `;
@@ -46,16 +62,43 @@ function populateCategorySelect() {
 
 document.getElementById('tx-type').addEventListener('change', populateCategorySelect);
 
+// --- Seletor de emoji ---
+const emojiPicker = document.getElementById('emoji-picker');
+const emojiPickerBtn = document.getElementById('cat-icon-btn');
+const emojiHiddenInput = document.getElementById('cat-icon');
+
+emojiPicker.innerHTML = EMOJI_OPTIONS.map((e) => `<button type="button" class="emoji-option">${e}</button>`).join('');
+
+emojiPickerBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  emojiPicker.classList.toggle('hidden');
+});
+
+emojiPicker.addEventListener('click', (e) => {
+  const btn = e.target.closest('.emoji-option');
+  if (!btn) return;
+  emojiHiddenInput.value = btn.textContent;
+  emojiPickerBtn.textContent = btn.textContent;
+  emojiPicker.classList.add('hidden');
+});
+
+document.addEventListener('click', (e) => {
+  if (!emojiPicker.contains(e.target) && e.target !== emojiPickerBtn) {
+    emojiPicker.classList.add('hidden');
+  }
+});
+
 document.getElementById('category-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const name = document.getElementById('cat-name').value.trim();
   const type = document.getElementById('cat-type').value;
-  const icon = document.getElementById('cat-icon').value.trim() || '💰';
+  const icon = emojiHiddenInput.value || '💰';
   const color = document.getElementById('cat-color').value;
+  const description = document.getElementById('cat-description').value.trim() || null;
 
   const { error } = await supabaseClient
     .from('categories')
-    .insert({ user_id: AppState.user.id, name, type, icon, color });
+    .insert({ user_id: AppState.user.id, name, type, icon, color, description });
 
   if (error) {
     alert('Não foi possível criar a categoria: ' + error.message);
@@ -63,7 +106,8 @@ document.getElementById('category-form').addEventListener('submit', async (e) =>
   }
 
   e.target.reset();
-  document.getElementById('cat-icon').value = '💰';
+  emojiHiddenInput.value = '💰';
+  emojiPickerBtn.textContent = '💰';
   document.getElementById('cat-color').value = '#6366f1';
   await loadCategories();
 });

@@ -342,6 +342,51 @@ select:focus {
   min-width: 130px;
 }
 
+.emoji-field {
+  position: relative;
+}
+
+.emoji-picker-btn {
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.emoji-picker-btn:hover {
+  background: var(--bg);
+}
+
+.emoji-picker {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  width: 230px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.emoji-option {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  padding: 0.3rem;
+  border-radius: 6px;
+}
+
+.emoji-option:hover {
+  background: var(--bg);
+}
+
 /* ---------- Lists ---------- */
 
 .tx-list,
@@ -432,4 +477,16 @@ select:focus {
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
+  align-self: flex-start;
+}
+
+.category-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.category-description {
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }

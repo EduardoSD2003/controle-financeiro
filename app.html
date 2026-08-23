@@ -151,8 +151,13 @@
             <option value="despesa">Despesa</option>
             <option value="receita">Receita</option>
           </select>
-          <input type="text" id="cat-icon" placeholder="Ícone (emoji)" maxlength="4" value="💰" />
+          <div class="emoji-field">
+            <button type="button" id="cat-icon-btn" class="emoji-picker-btn" title="Escolher ícone">💰</button>
+            <input type="hidden" id="cat-icon" value="💰" />
+            <div id="emoji-picker" class="emoji-picker hidden"></div>
+          </div>
           <input type="color" id="cat-color" value="#6366f1" />
+          <input type="text" id="cat-description" placeholder="Descrição (opcional)" />
           <button type="submit" class="btn btn-primary">Adicionar</button>
         </form>
 

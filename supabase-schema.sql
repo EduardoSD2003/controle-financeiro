@@ -16,6 +16,7 @@ create table if not exists categories (
   type text not null check (type in ('despesa', 'receita')),
   color text not null default '#6366f1',
   icon text not null default '💰',
+  description text,
   created_at timestamptz not null default now()
 );
 
