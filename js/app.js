@@ -5,6 +5,7 @@ const AppState = {
   categories: [], // todas as categorias do usuário (despesa + receita)
   recurring: [], // recorrências ativas/pausadas
   selectedMonth: startOfMonth(new Date()), // mês exibido em Visão Geral, Transações e Gráficos
+  selectedYear: new Date().getFullYear(), // ano exibido nas Estatísticas anuais (aba Gráficos)
 };
 
 function startOfMonth(date) {
@@ -62,6 +63,12 @@ async function changeMonth(delta) {
   refreshMonthDependentViews();
 }
 
+function changeYear(delta) {
+  AppState.selectedYear += delta;
+  document.getElementById('charts-year-label').textContent = String(AppState.selectedYear);
+  if (typeof renderYearlyStats === 'function') renderYearlyStats();
+}
+
 function refreshMonthDependentViews() {
   if (typeof renderOverview === 'function') renderOverview();
   if (typeof renderTransactionsSection === 'function') renderTransactionsSection();
@@ -93,6 +100,8 @@ document.getElementById('tx-prev-month').addEventListener('click', () => changeM
 document.getElementById('tx-next-month').addEventListener('click', () => changeMonth(1));
 document.getElementById('charts-prev-month').addEventListener('click', () => changeMonth(-1));
 document.getElementById('charts-next-month').addEventListener('click', () => changeMonth(1));
+document.getElementById('charts-prev-year').addEventListener('click', () => changeYear(-1));
+document.getElementById('charts-next-year').addEventListener('click', () => changeYear(1));
 
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
@@ -115,6 +124,7 @@ async function initApp() {
   document.getElementById('rec-start-date').value = today;
 
   updateMonthLabels();
+  document.getElementById('charts-year-label').textContent = String(AppState.selectedYear);
 
   await loadCategories();
   await loadRecurring();

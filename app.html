@@ -76,22 +76,28 @@
           <h2>Transações</h2>
         </div>
 
-        <form id="transaction-form" class="inline-form">
-          <select id="tx-type" required>
-            <option value="despesa">Despesa</option>
-            <option value="receita">Receita</option>
-          </select>
-          <select id="tx-category" required></select>
-          <input type="number" id="tx-amount" placeholder="Valor" step="0.01" min="0.01" required />
-          <input type="text" id="tx-description" placeholder="Descrição (opcional)" />
-          <input type="date" id="tx-date" required />
-          <label class="inline-checkbox">
-            <input type="checkbox" id="tx-installment-toggle" />
-            Parcelar
-          </label>
-          <input type="number" id="tx-installment-count" placeholder="Nº de parcelas" min="2" max="60" class="short-input hidden" />
-          <button type="submit" class="btn btn-primary">Adicionar</button>
-          <button type="button" id="tx-cancel-edit" class="btn btn-ghost hidden">Cancelar edição</button>
+        <form id="transaction-form" class="tx-form">
+          <div class="tx-form-row">
+            <select id="tx-type" required>
+              <option value="despesa">Despesa</option>
+              <option value="receita">Receita</option>
+            </select>
+            <select id="tx-category" required></select>
+            <input type="number" id="tx-amount" placeholder="Valor" step="0.01" min="0.01" required />
+            <input type="text" id="tx-description" placeholder="Descrição (opcional)" />
+            <input type="date" id="tx-date" required />
+          </div>
+          <div class="tx-form-row">
+            <label class="inline-checkbox">
+              <input type="checkbox" id="tx-installment-toggle" />
+              Parcelar em
+            </label>
+            <input type="number" id="tx-installment-count" placeholder="Nº de parcelas" min="2" max="60" class="short-input hidden" />
+            <div class="tx-form-actions">
+              <button type="submit" class="btn btn-primary">Adicionar</button>
+              <button type="button" id="tx-cancel-edit" class="btn btn-ghost hidden">Cancelar edição</button>
+            </div>
+          </div>
         </form>
 
         <div class="section-header">
@@ -124,7 +130,14 @@
           </div>
         </div>
 
-        <div class="overview-grid">
+        <div class="panel" style="margin-bottom:1rem">
+          <h3>Evolução do saldo — últimos 6 meses</h3>
+          <div class="chart-wrap chart-wrap-wide">
+            <canvas id="balance-line-chart"></canvas>
+          </div>
+        </div>
+
+        <div class="overview-grid" style="margin-bottom:1rem">
           <div class="panel">
             <h3>Gastos por categoria no mês</h3>
             <div class="chart-wrap">
@@ -133,11 +146,50 @@
             <p id="charts-category-empty" class="empty-msg hidden">Nenhum gasto neste mês ainda.</p>
           </div>
           <div class="panel">
-            <h3>Investido x Valor atual</h3>
+            <h3>Receitas por categoria no mês</h3>
             <div class="chart-wrap">
-              <canvas id="investments-chart"></canvas>
+              <canvas id="charts-income-category-chart"></canvas>
             </div>
-            <p id="charts-investments-empty" class="empty-msg hidden">Nenhum investimento cadastrado ainda.</p>
+            <p id="charts-income-category-empty" class="empty-msg hidden">Nenhuma receita neste mês ainda.</p>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-bottom:2rem">
+          <h3>Investido x Valor atual</h3>
+          <div class="chart-wrap">
+            <canvas id="investments-chart"></canvas>
+          </div>
+          <p id="charts-investments-empty" class="empty-msg hidden">Nenhum investimento cadastrado ainda.</p>
+        </div>
+
+        <div class="section-header">
+          <h3>Estatísticas anuais</h3>
+          <div class="month-picker">
+            <button id="charts-prev-year" class="btn btn-ghost">‹</button>
+            <span id="charts-year-label"></span>
+            <button id="charts-next-year" class="btn btn-ghost">›</button>
+          </div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="stat-card">
+            <span class="stat-label">Receitas no ano</span>
+            <span class="stat-value positive" id="year-stat-income">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Despesas no ano</span>
+            <span class="stat-value negative" id="year-stat-expense">R$ 0,00</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Saldo no ano</span>
+            <span class="stat-value" id="year-stat-balance">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>Receitas x Despesas por mês</h3>
+          <div class="chart-wrap chart-wrap-wide">
+            <canvas id="yearly-chart"></canvas>
           </div>
         </div>
       </section>

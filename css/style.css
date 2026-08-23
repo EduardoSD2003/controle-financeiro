@@ -371,6 +371,37 @@ select:focus {
   min-width: 130px;
 }
 
+.tx-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.tx-form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.tx-form-row + .tx-form-row {
+  margin-top: 0.7rem;
+}
+
+.tx-form-row input,
+.tx-form-row select {
+  flex: 1;
+  min-width: 130px;
+}
+
+.tx-form-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
 .emoji-field {
   position: relative;
 }
