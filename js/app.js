@@ -92,6 +92,9 @@ document.getElementById('main-tabs').addEventListener('click', (e) => {
   if (btn.dataset.section === 'charts' && typeof renderChartsSection === 'function') {
     renderChartsSection();
   }
+  if (btn.dataset.section === 'telegram' && typeof renderTelegramSection === 'function') {
+    renderTelegramSection();
+  }
 });
 
 document.getElementById('prev-month').addEventListener('click', () => changeMonth(-1));

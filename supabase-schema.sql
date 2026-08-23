@@ -63,12 +63,40 @@ create table if not exists investments (
   created_at timestamptz not null default now()
 );
 
+-- Integração com Telegram: vínculo da conta e estado da conversa do bot.
+-- Só a Edge Function (chave service_role) escreve nessas tabelas — o app
+-- só gera o código e confere se já está vinculado.
+create table if not exists telegram_link_codes (
+  code text primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists telegram_links (
+  telegram_user_id bigint primary key,
+  user_id uuid not null references auth.users(id) on delete cascade unique,
+  telegram_username text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists telegram_conversations (
+  telegram_user_id bigint primary key,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  step text not null,
+  draft jsonb not null default '{}',
+  updated_at timestamptz not null default now()
+);
+
 -- Segurança: cada usuário só acessa os próprios dados
 alter table profiles enable row level security;
 alter table categories enable row level security;
 alter table transactions enable row level security;
 alter table investments enable row level security;
 alter table recurring_transactions enable row level security;
+alter table telegram_link_codes enable row level security;
+alter table telegram_links enable row level security;
+alter table telegram_conversations enable row level security;
 
 create policy "própria conta" on profiles
   for all using (auth.uid() = id) with check (auth.uid() = id);
@@ -84,6 +112,25 @@ create policy "próprios investimentos" on investments
 
 create policy "próprias recorrências" on recurring_transactions
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- O app só precisa gerar (insert) e ler (select) seus próprios códigos;
+-- quem consome e apaga o código é a Edge Function, com a chave service_role.
+create policy "gerar próprio código" on telegram_link_codes
+  for insert with check (auth.uid() = user_id);
+
+create policy "ver próprios códigos" on telegram_link_codes
+  for select using (auth.uid() = user_id);
+
+-- O app só lê e desvincula (delete) sua própria conta; quem cria o vínculo
+-- é a Edge Function (service_role), nunca o próprio usuário.
+create policy "ver próprio vínculo" on telegram_links
+  for select using (auth.uid() = user_id);
+
+create policy "desvincular própria conta" on telegram_links
+  for delete using (auth.uid() = user_id);
+
+-- telegram_conversations não tem nenhuma policy: só a service_role
+-- (Edge Function) consegue ler/escrever nela.
 
 -- Quando um usuário se cadastra, cria o perfil e algumas categorias padrão
 create or replace function public.handle_new_user()

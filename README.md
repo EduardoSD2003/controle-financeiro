@@ -1,12 +1,10 @@
 # Controle Financeiro
 
-App simples para controlar gastos, receitas e investimentos, com login por
-email. Site 100% estático (HTML/CSS/JS puro, sem build, sem framework) —
-o backend (login, banco de dados) é o **Supabase**, que tem plano gratuito
-permanente e sem cartão de crédito.
-
-> A integração com WhatsApp (lançar gastos mandando mensagem) fica para uma
-> fase 2 — a base de dados já está pronta para receber isso depois.
+App para controlar gastos, receitas e investimentos, com login por email e
+lançamento de transações também pelo Telegram. Site 100% estático
+(HTML/CSS/JS puro, sem build, sem framework) — o backend (login, banco de
+dados, bot do Telegram) é o **Supabase**, que tem plano gratuito permanente
+e sem cartão de crédito.
 
 ## Como funciona
 
@@ -15,7 +13,12 @@ permanente e sem cartão de crédito.
   Security no banco).
 - Ao criar a conta, já vêm 8 categorias padrão (Alimentação, Transporte,
   Moradia, Saúde, Lazer, Outros, Salário, Outras receitas) — dá pra criar
-  quantas categorias personalizadas quiser depois.
+  quantas categorias personalizadas quiser depois, com emoji e cor.
+- Transações podem ser parceladas (gera uma transação por mês futuro) e
+  contas fixas podem ser lançadas automaticamente todo mês (Recorrências).
+- Um bot do Telegram permite lançar despesas/receitas de qualquer lugar,
+  respondendo as perguntas do bot (categoria, valor, parcelamento,
+  descrição).
 - Tudo é salvo em tempo real no Supabase (Postgres).
 
 ## Passo 1 — Criar o backend gratuito (Supabase)
@@ -78,30 +81,126 @@ transações.
 6. Em 1-2 minutos o GitHub mostrará o link do site, algo como:
    `https://SEU_USUARIO.github.io/SEU_REPOSITORIO/`
 
+> **Cache do navegador:** os arquivos CSS/JS são carregados com uma
+> versão na URL (`?v=8`). Se você editar esses arquivos no futuro, aumente
+> esse número em [`index.html`](index.html) e [`app.html`](app.html) —
+> assim o navegador de quem já visitou o site busca a versão nova em vez
+> de usar a antiga que guardou em cache.
+
+## Passo 4 — Ligar o bot do Telegram (opcional)
+
+Com isso, você lança despesas e receitas direto pelo Telegram, respondendo
+as perguntas do bot.
+
+### 4.1. Criar o bot
+
+1. No Telegram, procure por **@BotFather** e inicie uma conversa.
+2. Envie `/newbot`, escolha um nome e um usuário (precisa terminar em
+   `bot`, ex: `meucontrolefinanceiro_bot`).
+3. O BotFather te dá um **token** (algo como `123456:ABC-DEF...`). Guarde.
+
+### 4.2. Instalar o Supabase CLI e logar
+
+Com [Node.js](https://nodejs.org) instalado:
+
+```bash
+npm install -g supabase
+supabase login
+```
+
+Isso abre o navegador pra você autorizar o CLI na sua conta Supabase.
+
+### 4.3. Ligar a pasta do projeto ao seu projeto Supabase
+
+Na pasta deste projeto:
+
+```bash
+supabase link --project-ref SEU_PROJECT_REF
+```
+
+O `SEU_PROJECT_REF` é o trecho antes de `.supabase.co` na Project URL
+(Passo 1.6).
+
+### 4.4. Configurar os "secrets" da função
+
+Esses valores ficam só no servidor, nunca no site:
+
+- **`SUPABASE_SERVICE_ROLE_KEY`**: Project Settings → API → `service_role`
+  (a chave secreta, diferente da `anon public`).
+- **`TELEGRAM_BOT_TOKEN`**: o token do Passo 4.1.
+- **`TELEGRAM_WEBHOOK_SECRET`**: uma senha aleatória inventada por você
+  (ex: gere uma em https://1password.com/password-generator/), só serve
+  pra confirmar que as chamadas realmente vêm do Telegram.
+
+```bash
+supabase secrets set TELEGRAM_BOT_TOKEN=123456:ABC-DEF...
+supabase secrets set TELEGRAM_WEBHOOK_SECRET=uma-senha-bem-aleatoria-aqui
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+```
+
+### 4.5. Publicar a função
+
+```bash
+supabase functions deploy telegram-webhook --no-verify-jwt
+```
+
+O `--no-verify-jwt` é necessário porque quem chama essa função é o
+Telegram, não um usuário logado no app — a proteção contra chamadas
+falsas vem do `TELEGRAM_WEBHOOK_SECRET`, conferido dentro da função.
+
+Ao final, o comando mostra a URL da função, algo como:
+`https://SEU_PROJECT_REF.supabase.co/functions/v1/telegram-webhook`
+
+### 4.6. Avisar o Telegram pra onde mandar as mensagens
+
+Troque `SEU_PROJECT_REF`, `SEU_BOT_TOKEN` e `SUA_SENHA_ALEATORIA` pelos
+seus valores e rode (pode ser no terminal ou colando a URL no navegador):
+
+```bash
+curl "https://api.telegram.org/botSEU_BOT_TOKEN/setWebhook?url=https://SEU_PROJECT_REF.supabase.co/functions/v1/telegram-webhook&secret_token=SUA_SENHA_ALEATORIA"
+```
+
+Deve responder `{"ok":true,"result":true,...}`.
+
+### 4.7. Usar
+
+1. No app, abra a aba **Telegram** → **Gerar código**.
+2. No Telegram, abra o chat com seu bot e envie o código gerado.
+3. Envie `/novo` pro bot pra lançar uma despesa ou receita — ele pergunta
+   tipo, categoria (com botões, ou "➕ Nova categoria"), valor, se é
+   parcelado e descrição, mostra um resumo e confirma antes de salvar.
+
+> Pelo bot a data do lançamento é sempre "hoje" (não dá pra escolher outra
+> data por lá, só pelo site).
+
 ## Estrutura do projeto
 
 ```
-index.html            Tela de login/cadastro
-app.html               App principal (Visão Geral, Transações, Investimentos, Categorias)
-css/style.css           Visual do site
-js/config.js            Chaves do Supabase (você preenche)
-js/supabaseClient.js    Inicialização do cliente Supabase
-js/login.js             Lógica da tela de login/cadastro
-js/app.js               Estado compartilhado, navegação entre abas, guard de login
-js/categories.js        CRUD de categorias
-js/transactions.js      CRUD de transações (gastos e receitas)
-js/investments.js       CRUD de investimentos
-js/dashboard.js         Visão geral: totais do mês e gráfico por categoria
-supabase-schema.sql     Script para criar as tabelas no Supabase
+index.html                             Tela de login/cadastro
+app.html                                App principal (todas as abas)
+css/style.css                           Visual do site
+js/config.js                            Chaves do Supabase (você preenche)
+js/supabaseClient.js                    Inicialização do cliente Supabase
+js/login.js                             Lógica da tela de login/cadastro
+js/app.js                               Estado compartilhado, navegação, guard de login
+js/categories.js                        CRUD de categorias + seletor de emoji
+js/transactions.js                      CRUD de transações, edição e parcelamento
+js/recurring.js                         Recorrências (contas fixas automáticas)
+js/investments.js                       CRUD de investimentos
+js/dashboard.js                         Visão geral: totais do mês e últimas transações
+js/charts.js                            Aba Gráficos (mensal, anual, por categoria)
+js/telegram.js                          Vínculo da conta com o bot do Telegram
+supabase-schema.sql                     Script para criar as tabelas no Supabase
+supabase/functions/telegram-webhook/    Edge Function que conversa com o bot
 ```
 
 ## Possíveis melhorias futuras
 
-- Integração com WhatsApp: enviar uma mensagem tipo "Mercado 85,90" e o
-  gasto entrar automaticamente na categoria certa (via API oficial do
-  WhatsApp/Meta — decisão pendente de conta Business).
-- Editar transações e investimentos (hoje dá pra adicionar e excluir).
 - Metas de gastos por categoria e alertas.
 - Exportar relatório do mês em PDF/CSV.
-- Gráfico de evolução patrimonial dos investimentos ao longo do tempo.
-- Recorrência automática para contas fixas (aluguel, assinaturas).
+- Gráfico de evolução patrimonial dos investimentos ao longo do tempo
+  (hoje só mostra o valor atual, não o histórico).
+- Lançar transações direto por texto livre no Telegram (ex: "Mercado
+  85,90"), sem precisar do fluxo de perguntas.
+- Editar recorrências e investimentos já cadastrados (hoje dá pra
+  adicionar, pausar/retomar e excluir, mas não editar os valores).

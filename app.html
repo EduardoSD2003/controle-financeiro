@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Controle Financeiro</title>
-  <link rel="stylesheet" href="css/style.css?v=7" />
+  <link rel="stylesheet" href="css/style.css?v=8" />
 </head>
 <body>
   <div class="app-shell">
@@ -17,6 +17,7 @@
         <button class="tab-btn" data-section="recurring">Recorrências</button>
         <button class="tab-btn" data-section="investments">Investimentos</button>
         <button class="tab-btn" data-section="categories">Categorias</button>
+        <button class="tab-btn" data-section="telegram">Telegram</button>
       </nav>
       <div class="topbar-user">
         <span id="user-email"></span>
@@ -295,19 +296,51 @@
           </div>
         </div>
       </section>
+
+      <!-- Telegram -->
+      <section id="section-telegram" class="section">
+        <div class="section-header">
+          <h2>Telegram</h2>
+        </div>
+
+        <div class="panel hidden" id="telegram-linked-panel">
+          <h3>✅ Conta vinculada</h3>
+          <p id="telegram-linked-info" class="empty-msg" style="text-align:left;padding:0.3rem 0 1rem"></p>
+          <button id="telegram-unlink-btn" class="btn btn-ghost">Desvincular</button>
+        </div>
+
+        <div class="panel" id="telegram-unlinked-panel">
+          <h3>Lançar gastos pelo Telegram</h3>
+          <p class="empty-msg" style="text-align:left;padding:0 0 1rem">
+            Converse com o bot pra lançar despesas e receitas direto do celular — ele pergunta
+            tipo, categoria (sugerida ou nova), valor, se é parcelado e descrição.
+          </p>
+          <ol class="telegram-steps">
+            <li>Abra o Telegram e procure pelo bot do app.</li>
+            <li>Clique em "Gerar código" abaixo.</li>
+            <li>Envie esse código pro bot em até 10 minutos.</li>
+          </ol>
+          <button id="telegram-generate-code-btn" class="btn btn-primary">Gerar código</button>
+          <div id="telegram-code-display" class="hidden">
+            <span class="stat-label">Seu código (válido por 10 minutos)</span>
+            <div class="telegram-code" id="telegram-code-value">------</div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <script src="js/config.js?v=7"></script>
-  <script src="js/supabaseClient.js?v=7"></script>
-  <script src="js/app.js?v=7"></script>
-  <script src="js/categories.js?v=7"></script>
-  <script src="js/transactions.js?v=7"></script>
-  <script src="js/recurring.js?v=7"></script>
-  <script src="js/investments.js?v=7"></script>
-  <script src="js/dashboard.js?v=7"></script>
-  <script src="js/charts.js?v=7"></script>
+  <script src="js/config.js?v=8"></script>
+  <script src="js/supabaseClient.js?v=8"></script>
+  <script src="js/app.js?v=8"></script>
+  <script src="js/categories.js?v=8"></script>
+  <script src="js/transactions.js?v=8"></script>
+  <script src="js/recurring.js?v=8"></script>
+  <script src="js/investments.js?v=8"></script>
+  <script src="js/dashboard.js?v=8"></script>
+  <script src="js/charts.js?v=8"></script>
+  <script src="js/telegram.js?v=8"></script>
 </body>
 </html>
