@@ -438,6 +438,17 @@ select:focus {
   margin-top: 0.6rem;
 }
 
+.emoji-custom-row {
+  padding: 0.1rem 0.1rem 0.6rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.emoji-custom-row input {
+  width: 100%;
+  font-size: 1rem;
+}
+
 .emoji-group-label {
   display: block;
   font-size: 0.72rem;

@@ -67,8 +67,14 @@ const emojiPicker = document.getElementById('emoji-picker');
 const emojiPickerBtn = document.getElementById('cat-icon-btn');
 const emojiHiddenInput = document.getElementById('cat-icon');
 
-emojiPicker.innerHTML = EMOJI_GROUPS.map(
-  (group) => `
+emojiPicker.innerHTML =
+  `
+    <div class="emoji-custom-row">
+      <input type="text" id="emoji-custom-input" placeholder="Ou digite/cole um emoji" maxlength="8" />
+    </div>
+  ` +
+  EMOJI_GROUPS.map(
+    (group) => `
     <div class="emoji-group">
       <span class="emoji-group-label">${group.label}</span>
       <div class="emoji-grid">
@@ -76,7 +82,9 @@ emojiPicker.innerHTML = EMOJI_GROUPS.map(
       </div>
     </div>
   `
-).join('');
+  ).join('');
+
+const emojiCustomInput = document.getElementById('emoji-custom-input');
 
 emojiPickerBtn.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -88,7 +96,22 @@ emojiPicker.addEventListener('click', (e) => {
   if (!btn) return;
   emojiHiddenInput.value = btn.textContent;
   emojiPickerBtn.textContent = btn.textContent;
+  emojiCustomInput.value = '';
   emojiPicker.classList.add('hidden');
+});
+
+emojiCustomInput.addEventListener('input', () => {
+  const value = emojiCustomInput.value.trim();
+  if (!value) return;
+  emojiHiddenInput.value = value;
+  emojiPickerBtn.textContent = value;
+});
+
+emojiCustomInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    emojiPicker.classList.add('hidden');
+  }
 });
 
 document.addEventListener('click', (e) => {
@@ -117,6 +140,7 @@ document.getElementById('category-form').addEventListener('submit', async (e) =>
   e.target.reset();
   emojiHiddenInput.value = '💰';
   emojiPickerBtn.textContent = '💰';
+  emojiCustomInput.value = '';
   document.getElementById('cat-color').value = '#6366f1';
   await loadCategories();
 });

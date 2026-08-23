@@ -1,6 +1,7 @@
 // CRUD de transações (gastos e receitas) — seção "Transações"
 
 let editingTxId = null;
+let currentMonthTransactions = [];
 
 function findCategory(id) {
   return AppState.categories.find((c) => c.id === id);
@@ -25,6 +26,7 @@ async function fetchTransactions(startISO, endISO) {
 async function renderTransactionsSection() {
   const { startISO, endISO } = monthRange(AppState.selectedMonth);
   const transactions = await fetchTransactions(startISO, endISO);
+  currentMonthTransactions = transactions;
 
   const list = document.getElementById('transactions-list');
   const emptyMsg = document.getElementById('transactions-empty');
@@ -60,11 +62,12 @@ function renderRecentTxItem(tx) {
   li.className = 'tx-item';
   const sign = tx.type === 'despesa' ? '-' : '+';
   const time = new Date(tx.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const installmentBadge = tx.installment_total ? ` · ${tx.installment_total}x` : '';
   li.innerHTML = `
     <span class="tx-icon">${cat ? cat.icon : '❓'}</span>
     <span class="tx-info">
       <span class="tx-title">${tx.description || (cat ? cat.name : 'Sem categoria')}</span>
-      <span class="tx-sub">${cat ? cat.name : ''} · ${formatDateBR(tx.date)} às ${time}</span>
+      <span class="tx-sub">${cat ? cat.name : ''} · ${formatDateBR(tx.date)} às ${time}${installmentBadge}</span>
     </span>
     <span class="tx-amount ${tx.type === 'despesa' ? 'negative' : 'positive'}">${sign} ${formatBRL(tx.amount)}</span>
   `;
@@ -168,14 +171,29 @@ document.getElementById('transactions-list').addEventListener('click', async (e)
 
   const delBtn = e.target.closest('[data-delete-tx]');
   if (delBtn) {
-    if (!confirm('Excluir esta transação?')) return;
+    const id = delBtn.dataset.deleteTx;
+    const tx = currentMonthTransactions.find((t) => t.id === id);
+    const isInstallment = tx && tx.installment_group_id;
 
-    const { error } = await supabaseClient.from('transactions').delete().eq('id', delBtn.dataset.deleteTx);
+    const confirmMsg = isInstallment
+      ? 'Esta transação faz parte de um parcelamento. Excluir também vai apagar as parcelas futuras dela. Continuar?'
+      : 'Excluir esta transação?';
+    if (!confirm(confirmMsg)) return;
+
+    const query = isInstallment
+      ? supabaseClient
+          .from('transactions')
+          .delete()
+          .eq('installment_group_id', tx.installment_group_id)
+          .gte('installment_number', tx.installment_number)
+      : supabaseClient.from('transactions').delete().eq('id', id);
+
+    const { error } = await query;
     if (error) {
       alert('Não foi possível excluir: ' + error.message);
       return;
     }
-    if (editingTxId === delBtn.dataset.deleteTx) resetTransactionForm();
+    if (editingTxId === id) resetTransactionForm();
     refreshMonthDependentViews();
   }
 });

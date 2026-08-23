@@ -62,12 +62,14 @@ function renderCategoryChart(expenseTransactions) {
 }
 
 async function renderRecentTransactions() {
+  // Busca mais que 5 porque parcelas do mesmo lançamento são agrupadas
+  // depois (mostra só uma linha representando todas elas).
   const { data, error } = await supabaseClient
     .from('transactions')
     .select('*')
-    .order('date', { ascending: false })
     .order('created_at', { ascending: false })
-    .limit(5);
+    .order('date', { ascending: true })
+    .limit(30);
 
   const list = document.getElementById('recent-list');
   list.innerHTML = '';
@@ -77,5 +79,21 @@ async function renderRecentTransactions() {
     return;
   }
 
-  data.forEach((tx) => list.appendChild(renderRecentTxItem(tx)));
+  const seenInstallmentGroups = new Set();
+  const deduped = [];
+  for (const tx of data) {
+    if (tx.installment_group_id) {
+      if (seenInstallmentGroups.has(tx.installment_group_id)) continue;
+      seenInstallmentGroups.add(tx.installment_group_id);
+    }
+    deduped.push(tx);
+    if (deduped.length === 5) break;
+  }
+
+  if (deduped.length === 0) {
+    list.innerHTML = '<li class="empty-msg">Nenhuma transação ainda.</li>';
+    return;
+  }
+
+  deduped.forEach((tx) => list.appendChild(renderRecentTxItem(tx)));
 }
