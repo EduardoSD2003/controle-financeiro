@@ -106,6 +106,21 @@ document.getElementById('charts-next-month').addEventListener('click', () => cha
 document.getElementById('charts-prev-year').addEventListener('click', () => changeYear(-1));
 document.getElementById('charts-next-year').addEventListener('click', () => changeYear(1));
 
+// Alguns navegadores só reabrem o calendário nativo de forma confiável se
+// isso for pedido explicitamente a cada clique (senão às vezes abre só na
+// primeira vez). Aplica em todos os campos de data da página.
+document.querySelectorAll('input[type="date"]').forEach((input) => {
+  input.addEventListener('click', () => {
+    if (typeof input.showPicker === 'function') {
+      try {
+        input.showPicker();
+      } catch (err) {
+        // ignora: alguns navegadores recusam showPicker fora de um gesto do usuário
+      }
+    }
+  });
+});
+
 document.getElementById('logout-btn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
   window.location.href = 'index.html';

@@ -12,10 +12,48 @@ let chartsIncomeCategoryChart = null;
 let investmentsChart = null;
 let yearlyChart = null;
 
+const chartsCustomRangeToggle = document.getElementById('charts-custom-range-toggle');
+const chartsRangeStart = document.getElementById('charts-range-start');
+const chartsRangeEnd = document.getElementById('charts-range-end');
+const chartsGranularity = document.getElementById('charts-granularity');
+
+chartsCustomRangeToggle.addEventListener('change', () => {
+  document.getElementById('charts-month-picker').classList.toggle('hidden', chartsCustomRangeToggle.checked);
+  document.getElementById('charts-range-picker').classList.toggle('hidden', !chartsCustomRangeToggle.checked);
+
+  if (chartsCustomRangeToggle.checked && !chartsRangeStart.value && !chartsRangeEnd.value) {
+    const { startISO } = monthRange(AppState.selectedMonth);
+    chartsRangeStart.value = startISO;
+    chartsRangeEnd.value = toISODate(new Date());
+  }
+
+  renderChartsSection();
+});
+chartsRangeStart.addEventListener('change', renderChartsSection);
+chartsRangeEnd.addEventListener('change', renderChartsSection);
+chartsGranularity.addEventListener('change', renderChartsSection);
+
 async function renderChartsSection() {
-  const sixMonthData = await fetchSixMonthData(AppState.selectedMonth);
-  renderMonthlyChart(sixMonthData);
-  renderBalanceLineChart(sixMonthData);
+  const granularity = chartsGranularity.value;
+  const trendData =
+    granularity === 'day'
+      ? await fetchDailyData(new Date(), 14)
+      : granularity === 'week'
+        ? await fetchWeeklyData(new Date(), 8)
+        : await fetchSixMonthData(AppState.selectedMonth);
+
+  const trendSuffix = granularity === 'day' ? 'últimos 14 dias' : granularity === 'week' ? 'últimas 8 semanas' : 'últimos 6 meses';
+  document.getElementById('monthly-chart-title').textContent = `Receitas x Despesas — ${trendSuffix}`;
+  document.getElementById('balance-chart-title').textContent = `Evolução do saldo — ${trendSuffix}`;
+
+  renderMonthlyChart(trendData);
+  renderBalanceLineChart(trendData);
+
+  const usingCustomRange = chartsCustomRangeToggle.checked && chartsRangeStart.value && chartsRangeEnd.value;
+  const categoryPeriodLabel = usingCustomRange ? 'no período' : 'no mês';
+  document.getElementById('charts-category-title').textContent = `Gastos por categoria ${categoryPeriodLabel}`;
+  document.getElementById('charts-income-category-title').textContent = `Receitas por categoria ${categoryPeriodLabel}`;
+
   await renderChartsCategoryChart();
   await renderIncomeCategoryChart();
   await renderInvestmentsChart();
@@ -34,8 +72,8 @@ async function fetchSixMonthData(endMonth) {
     .lt('date', endISO);
 
   const months = Array.from({ length: 6 }, (_, i) => addMonthsClamped(endMonth, -(5 - i)));
-  const incomeByMonth = months.map(() => 0);
-  const expenseByMonth = months.map(() => 0);
+  const incomeByBucket = months.map(() => 0);
+  const expenseByBucket = months.map(() => 0);
 
   if (!error && data) {
     data.forEach((tx) => {
@@ -44,24 +82,93 @@ async function fetchSixMonthData(endMonth) {
         (m) => m.getFullYear() === txDate.getFullYear() && m.getMonth() === txDate.getMonth()
       );
       if (idx === -1) return;
-      if (tx.type === 'receita') incomeByMonth[idx] += Number(tx.amount);
-      else expenseByMonth[idx] += Number(tx.amount);
+      if (tx.type === 'receita') incomeByBucket[idx] += Number(tx.amount);
+      else expenseByBucket[idx] += Number(tx.amount);
     });
   }
 
   const labels = months.map((m) => monthLabel(m).slice(0, 3));
-  return { labels, incomeByMonth, expenseByMonth };
+  return { labels, incomeByBucket, expenseByBucket };
 }
 
-function renderMonthlyChart({ labels, incomeByMonth, expenseByMonth }) {
+async function fetchDailyData(endDate, days) {
+  const dayList = Array.from({ length: days }, (_, i) => {
+    const d = new Date(endDate);
+    d.setDate(d.getDate() - (days - 1 - i));
+    return d;
+  });
+
+  const startISO = toISODate(dayList[0]);
+  const endExclusive = new Date(dayList[dayList.length - 1]);
+  endExclusive.setDate(endExclusive.getDate() + 1);
+
+  const { data, error } = await supabaseClient
+    .from('transactions')
+    .select('date, type, amount')
+    .gte('date', startISO)
+    .lt('date', toISODate(endExclusive));
+
+  const incomeByBucket = dayList.map(() => 0);
+  const expenseByBucket = dayList.map(() => 0);
+
+  if (!error && data) {
+    data.forEach((tx) => {
+      const idx = dayList.findIndex((d) => toISODate(d) === tx.date);
+      if (idx === -1) return;
+      if (tx.type === 'receita') incomeByBucket[idx] += Number(tx.amount);
+      else expenseByBucket[idx] += Number(tx.amount);
+    });
+  }
+
+  const labels = dayList.map((d) => formatDateBR(toISODate(d)).slice(0, 5));
+  return { labels, incomeByBucket, expenseByBucket };
+}
+
+async function fetchWeeklyData(endDate, weeks) {
+  const lastWeekStart = startOfWeek(endDate);
+  const weekStarts = Array.from({ length: weeks }, (_, i) => {
+    const d = new Date(lastWeekStart);
+    d.setDate(d.getDate() - (weeks - 1 - i) * 7);
+    return d;
+  });
+
+  const startISO = toISODate(weekStarts[0]);
+  const endExclusive = new Date(lastWeekStart);
+  endExclusive.setDate(endExclusive.getDate() + 7);
+
+  const { data, error } = await supabaseClient
+    .from('transactions')
+    .select('date, type, amount')
+    .gte('date', startISO)
+    .lt('date', toISODate(endExclusive));
+
+  const incomeByBucket = weekStarts.map(() => 0);
+  const expenseByBucket = weekStarts.map(() => 0);
+
+  if (!error && data) {
+    data.forEach((tx) => {
+      const txDate = new Date(tx.date + 'T00:00:00');
+      const wStart = toISODate(startOfWeek(txDate));
+      const idx = weekStarts.findIndex((w) => toISODate(w) === wStart);
+      if (idx === -1) return;
+      if (tx.type === 'receita') incomeByBucket[idx] += Number(tx.amount);
+      else expenseByBucket[idx] += Number(tx.amount);
+    });
+  }
+
+  const labels = weekStarts.map((d) => formatDateBR(toISODate(d)).slice(0, 5));
+  return { labels, incomeByBucket, expenseByBucket };
+}
+
+function renderMonthlyChart({ labels, incomeByBucket, expenseByBucket }) {
   if (monthlyChart) monthlyChart.destroy();
   monthlyChart = new Chart(document.getElementById('monthly-chart'), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Receitas', data: incomeByMonth, backgroundColor: '#16a34a' },
-        { label: 'Despesas', data: expenseByMonth, backgroundColor: '#dc2626' },
+        { label: 'Receitas', data: incomeByBucket, backgroundColor: '#16a34a' },
+        { label: 'Despesas', data: expenseByBucket, backgroundColor: '#dc2626' },
       ],
     },
     options: {
@@ -72,10 +179,10 @@ function renderMonthlyChart({ labels, incomeByMonth, expenseByMonth }) {
   });
 }
 
-function renderBalanceLineChart({ labels, incomeByMonth, expenseByMonth }) {
+function renderBalanceLineChart({ labels, incomeByBucket, expenseByBucket }) {
   let running = 0;
-  const cumulativeBalance = incomeByMonth.map((income, i) => {
-    running += income - expenseByMonth[i];
+  const cumulativeBalance = incomeByBucket.map((income, i) => {
+    running += income - expenseByBucket[i];
     return running;
   });
 
@@ -106,8 +213,15 @@ function renderBalanceLineChart({ labels, incomeByMonth, expenseByMonth }) {
 }
 
 async function renderCategoryPie(canvasId, emptyId, type) {
-  const { startISO, endISO } = monthRange(AppState.selectedMonth);
-  const transactions = await fetchTransactions(startISO, endISO);
+  const usingCustomRange = chartsCustomRangeToggle.checked && chartsRangeStart.value && chartsRangeEnd.value;
+  let transactions;
+  if (usingCustomRange) {
+    transactions = await fetchTransactionsInclusive(chartsRangeStart.value, chartsRangeEnd.value);
+  } else {
+    const { startISO, endISO } = monthRange(AppState.selectedMonth);
+    transactions = await fetchTransactions(startISO, endISO);
+  }
+
   const filtered = transactions.filter((t) => t.type === type);
 
   const totals = {};

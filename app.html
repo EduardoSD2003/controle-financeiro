@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Farofa Fin</title>
-  <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=11" />
-  <link rel="stylesheet" href="css/style.css?v=11" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=12" />
+  <link rel="stylesheet" href="css/style.css?v=12" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <span class="logo"><img src="assets/logo.svg?v=11" alt="" class="logo-img" /> Farofa Fin</span>
+      <span class="logo"><img src="assets/logo.svg?v=12" alt="" class="logo-img" /> Farofa Fin</span>
       <nav class="tabs" id="main-tabs">
         <button class="tab-btn active" data-section="overview">Visão Geral</button>
         <button class="tab-btn" data-section="transactions">Transações</button>
@@ -132,24 +132,40 @@
 
       <!-- Gráficos -->
       <section id="section-charts" class="section">
-        <div class="section-header">
+        <div class="section-header tx-filters">
           <h2>Gráficos</h2>
-          <div class="month-picker">
+          <div class="month-picker" id="charts-month-picker">
             <button id="charts-prev-month" class="btn btn-ghost">‹</button>
             <span id="charts-month-label"></span>
             <button id="charts-next-month" class="btn btn-ghost">›</button>
           </div>
+          <div class="tx-range-picker hidden" id="charts-range-picker">
+            <input type="date" id="charts-range-start" />
+            <span>até</span>
+            <input type="date" id="charts-range-end" />
+          </div>
+          <div class="tx-filter-controls">
+            <label class="inline-checkbox">
+              <input type="checkbox" id="charts-custom-range-toggle" />
+              Período personalizado
+            </label>
+            <select id="charts-granularity">
+              <option value="month">Ver por mês</option>
+              <option value="day">Ver por dia</option>
+              <option value="week">Ver por semana</option>
+            </select>
+          </div>
         </div>
 
         <div class="panel" style="margin-bottom:1rem">
-          <h3>Receitas x Despesas — últimos 6 meses</h3>
+          <h3 id="monthly-chart-title">Receitas x Despesas — últimos 6 meses</h3>
           <div class="chart-wrap chart-wrap-wide">
             <canvas id="monthly-chart"></canvas>
           </div>
         </div>
 
         <div class="panel" style="margin-bottom:1rem">
-          <h3>Evolução do saldo — últimos 6 meses</h3>
+          <h3 id="balance-chart-title">Evolução do saldo — últimos 6 meses</h3>
           <div class="chart-wrap chart-wrap-wide">
             <canvas id="balance-line-chart"></canvas>
           </div>
@@ -157,18 +173,18 @@
 
         <div class="overview-grid" style="margin-bottom:1rem">
           <div class="panel">
-            <h3>Gastos por categoria no mês</h3>
+            <h3 id="charts-category-title">Gastos por categoria no mês</h3>
             <div class="chart-wrap">
               <canvas id="charts-category-chart"></canvas>
             </div>
-            <p id="charts-category-empty" class="empty-msg hidden">Nenhum gasto neste mês ainda.</p>
+            <p id="charts-category-empty" class="empty-msg hidden">Nenhum gasto no período ainda.</p>
           </div>
           <div class="panel">
-            <h3>Receitas por categoria no mês</h3>
+            <h3 id="charts-income-category-title">Receitas por categoria no mês</h3>
             <div class="chart-wrap">
               <canvas id="charts-income-category-chart"></canvas>
             </div>
-            <p id="charts-income-category-empty" class="empty-msg hidden">Nenhuma receita neste mês ainda.</p>
+            <p id="charts-income-category-empty" class="empty-msg hidden">Nenhuma receita no período ainda.</p>
           </div>
         </div>
 
@@ -349,15 +365,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <script src="js/config.js?v=11"></script>
-  <script src="js/supabaseClient.js?v=11"></script>
-  <script src="js/app.js?v=11"></script>
-  <script src="js/categories.js?v=11"></script>
-  <script src="js/transactions.js?v=11"></script>
-  <script src="js/recurring.js?v=11"></script>
-  <script src="js/investments.js?v=11"></script>
-  <script src="js/dashboard.js?v=11"></script>
-  <script src="js/charts.js?v=11"></script>
-  <script src="js/telegram.js?v=11"></script>
+  <script src="js/config.js?v=12"></script>
+  <script src="js/supabaseClient.js?v=12"></script>
+  <script src="js/app.js?v=12"></script>
+  <script src="js/categories.js?v=12"></script>
+  <script src="js/transactions.js?v=12"></script>
+  <script src="js/recurring.js?v=12"></script>
+  <script src="js/investments.js?v=12"></script>
+  <script src="js/dashboard.js?v=12"></script>
+  <script src="js/charts.js?v=12"></script>
+  <script src="js/telegram.js?v=12"></script>
 </body>
 </html>
