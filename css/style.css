@@ -291,6 +291,72 @@ select:focus {
   font-weight: 600;
 }
 
+.tx-filters {
+  align-items: center;
+}
+
+.tx-range-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.tx-range-picker input {
+  padding: 0.4rem 0.6rem;
+}
+
+.tx-filter-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.tx-filter-controls select {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.tx-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.2rem 0.3rem;
+  margin-top: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+
+.tx-group-header:first-child {
+  margin-top: 0;
+}
+
+.tx-group-label {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tx-group-totals {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 600;
+}
+
+.tx-group-totals .positive {
+  color: var(--positive);
+}
+
+.tx-group-totals .negative {
+  color: var(--negative);
+}
+
+.tx-group-balance {
+  color: var(--text);
+}
+
 /* ---------- Cards / stats ---------- */
 
 .cards-grid {

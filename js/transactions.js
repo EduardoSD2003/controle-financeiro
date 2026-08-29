@@ -23,17 +23,121 @@ async function fetchTransactions(startISO, endISO) {
   return data;
 }
 
+// Igual a fetchTransactions, mas com data final inclusiva (período personalizado).
+async function fetchTransactionsInclusive(startISO, endISO) {
+  const { data, error } = await supabaseClient
+    .from('transactions')
+    .select('*')
+    .gte('date', startISO)
+    .lte('date', endISO)
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+  return data;
+}
+
+function startOfWeek(date) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 (dom) .. 6 (sáb)
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diffToMonday);
+  return d;
+}
+
+const txCustomRangeToggle = document.getElementById('tx-custom-range-toggle');
+const txRangeStart = document.getElementById('tx-range-start');
+const txRangeEnd = document.getElementById('tx-range-end');
+const txGroupBy = document.getElementById('tx-group-by');
+
+txCustomRangeToggle.addEventListener('change', () => {
+  document.getElementById('tx-month-picker').classList.toggle('hidden', txCustomRangeToggle.checked);
+  document.getElementById('tx-range-picker').classList.toggle('hidden', !txCustomRangeToggle.checked);
+
+  if (txCustomRangeToggle.checked && !txRangeStart.value && !txRangeEnd.value) {
+    const { startISO } = monthRange(AppState.selectedMonth);
+    txRangeStart.value = startISO;
+    txRangeEnd.value = toISODate(new Date());
+  }
+
+  renderTransactionsSection();
+});
+txRangeStart.addEventListener('change', renderTransactionsSection);
+txRangeEnd.addEventListener('change', renderTransactionsSection);
+txGroupBy.addEventListener('change', renderTransactionsSection);
+
 async function renderTransactionsSection() {
-  const { startISO, endISO } = monthRange(AppState.selectedMonth);
-  const transactions = await fetchTransactions(startISO, endISO);
+  let transactions;
+
+  if (txCustomRangeToggle.checked) {
+    if (!txRangeStart.value || !txRangeEnd.value) {
+      transactions = [];
+    } else {
+      transactions = await fetchTransactionsInclusive(txRangeStart.value, txRangeEnd.value);
+    }
+  } else {
+    const { startISO, endISO } = monthRange(AppState.selectedMonth);
+    transactions = await fetchTransactions(startISO, endISO);
+  }
   currentMonthTransactions = transactions;
 
-  const list = document.getElementById('transactions-list');
   const emptyMsg = document.getElementById('transactions-empty');
-  list.innerHTML = '';
   emptyMsg.classList.toggle('hidden', transactions.length > 0);
 
-  transactions.forEach((tx) => list.appendChild(renderTxItem(tx)));
+  renderGroupedTransactions(transactions, txGroupBy.value);
+}
+
+function renderGroupedTransactions(transactions, groupBy) {
+  const list = document.getElementById('transactions-list');
+  list.innerHTML = '';
+
+  if (groupBy !== 'day' && groupBy !== 'week') {
+    transactions.forEach((tx) => list.appendChild(renderTxItem(tx)));
+    return;
+  }
+
+  const groups = new Map();
+
+  transactions.forEach((tx) => {
+    const txDate = new Date(tx.date + 'T00:00:00');
+    let key, label;
+
+    if (groupBy === 'day') {
+      key = tx.date;
+      label = formatDateBR(tx.date);
+    } else {
+      const monday = startOfWeek(txDate);
+      const sunday = new Date(monday);
+      sunday.setDate(sunday.getDate() + 6);
+      key = toISODate(monday);
+      label = `Semana de ${formatDateBR(toISODate(monday))} a ${formatDateBR(toISODate(sunday))}`;
+    }
+
+    if (!groups.has(key)) groups.set(key, { label, transactions: [] });
+    groups.get(key).transactions.push(tx);
+  });
+
+  groups.forEach(({ label, transactions: groupTx }) => {
+    const income = groupTx.filter((t) => t.type === 'receita').reduce((s, t) => s + Number(t.amount), 0);
+    const expense = groupTx.filter((t) => t.type === 'despesa').reduce((s, t) => s + Number(t.amount), 0);
+
+    const header = document.createElement('li');
+    header.className = 'tx-group-header';
+    header.innerHTML = `
+      <span class="tx-group-label">${label}</span>
+      <span class="tx-group-totals">
+        <span class="positive">+ ${formatBRL(income)}</span>
+        <span class="negative">- ${formatBRL(expense)}</span>
+        <span class="tx-group-balance">${formatBRL(income - expense)}</span>
+      </span>
+    `;
+    list.appendChild(header);
+
+    groupTx.forEach((tx) => list.appendChild(renderTxItem(tx)));
+  });
 }
 
 // Usado na aba "Transações": tem botões de editar e excluir.
