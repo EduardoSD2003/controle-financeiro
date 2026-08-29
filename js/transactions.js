@@ -52,6 +52,7 @@ const txCustomRangeToggle = document.getElementById('tx-custom-range-toggle');
 const txRangeStart = document.getElementById('tx-range-start');
 const txRangeEnd = document.getElementById('tx-range-end');
 const txGroupBy = document.getElementById('tx-group-by');
+const txFilterCategory = document.getElementById('tx-filter-category');
 
 txCustomRangeToggle.addEventListener('change', () => {
   document.getElementById('tx-month-picker').classList.toggle('hidden', txCustomRangeToggle.checked);
@@ -68,6 +69,22 @@ txCustomRangeToggle.addEventListener('change', () => {
 txRangeStart.addEventListener('change', renderTransactionsSection);
 txRangeEnd.addEventListener('change', renderTransactionsSection);
 txGroupBy.addEventListener('change', renderTransactionsSection);
+txFilterCategory.addEventListener('change', renderTransactionsSection);
+
+function populateTxFilterCategorySelect() {
+  const currentValue = txFilterCategory.value;
+  const despesas = AppState.categories.filter((c) => c.type === 'despesa');
+  const receitas = AppState.categories.filter((c) => c.type === 'receita');
+
+  const optionsFor = (cats) => cats.map((c) => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+
+  txFilterCategory.innerHTML =
+    '<option value="">Todas as categorias</option>' +
+    (despesas.length ? `<optgroup label="Despesas">${optionsFor(despesas)}</optgroup>` : '') +
+    (receitas.length ? `<optgroup label="Receitas">${optionsFor(receitas)}</optgroup>` : '');
+
+  txFilterCategory.value = currentValue;
+}
 
 async function renderTransactionsSection() {
   let transactions;
@@ -82,6 +99,11 @@ async function renderTransactionsSection() {
     const { startISO, endISO } = monthRange(AppState.selectedMonth);
     transactions = await fetchTransactions(startISO, endISO);
   }
+
+  if (txFilterCategory.value) {
+    transactions = transactions.filter((tx) => tx.category_id === txFilterCategory.value);
+  }
+
   currentMonthTransactions = transactions;
 
   const emptyMsg = document.getElementById('transactions-empty');

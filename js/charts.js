@@ -35,21 +35,35 @@ chartsGranularity.addEventListener('change', renderChartsSection);
 
 async function renderChartsSection() {
   const granularity = chartsGranularity.value;
-  const trendData =
-    granularity === 'day'
-      ? await fetchDailyData(new Date(), 14)
-      : granularity === 'week'
-        ? await fetchWeeklyData(new Date(), 8)
-        : await fetchSixMonthData(AppState.selectedMonth);
+  const usingCustomRange = chartsCustomRangeToggle.checked && chartsRangeStart.value && chartsRangeEnd.value;
 
-  const trendSuffix = granularity === 'day' ? 'últimos 14 dias' : granularity === 'week' ? 'últimas 8 semanas' : 'últimos 6 meses';
+  let trendData, trendSuffix;
+
+  if (usingCustomRange) {
+    if (granularity === 'week') {
+      trendData = await fetchWeeklyDataRange(chartsRangeStart.value, chartsRangeEnd.value);
+      trendSuffix = 'no período selecionado (por semana)';
+    } else {
+      trendData = await fetchDailyDataRange(chartsRangeStart.value, chartsRangeEnd.value);
+      trendSuffix = 'no período selecionado (por dia)';
+    }
+  } else if (granularity === 'day') {
+    trendData = await fetchDailyData(new Date(), 14);
+    trendSuffix = 'últimos 14 dias';
+  } else if (granularity === 'week') {
+    trendData = await fetchWeeklyData(new Date(), 8);
+    trendSuffix = 'últimas 8 semanas';
+  } else {
+    trendData = await fetchSixMonthData(AppState.selectedMonth);
+    trendSuffix = 'últimos 6 meses';
+  }
+
   document.getElementById('monthly-chart-title').textContent = `Receitas x Despesas — ${trendSuffix}`;
   document.getElementById('balance-chart-title').textContent = `Evolução do saldo — ${trendSuffix}`;
 
   renderMonthlyChart(trendData);
   renderBalanceLineChart(trendData);
 
-  const usingCustomRange = chartsCustomRangeToggle.checked && chartsRangeStart.value && chartsRangeEnd.value;
   const categoryPeriodLabel = usingCustomRange ? 'no período' : 'no mês';
   document.getElementById('charts-category-title').textContent = `Gastos por categoria ${categoryPeriodLabel}`;
   document.getElementById('charts-income-category-title').textContent = `Receitas por categoria ${categoryPeriodLabel}`;
@@ -158,6 +172,23 @@ async function fetchWeeklyData(endDate, weeks) {
 
   const labels = weekStarts.map((d) => formatDateBR(toISODate(d)).slice(0, 5));
   return { labels, incomeByBucket, expenseByBucket };
+}
+
+// Bucketa por dia um intervalo exato (período personalizado), limitando a
+// 90 dias pra não gerar um gráfico ilegível quando o período for muito longo.
+async function fetchDailyDataRange(startISO, endISO) {
+  const start = new Date(startISO + 'T00:00:00');
+  const end = new Date(endISO + 'T00:00:00');
+  const days = Math.max(1, Math.round((end - start) / 86400000) + 1);
+  return fetchDailyData(end, Math.min(days, 90));
+}
+
+// Igual, mas bucketa por semana (segunda a domingo), limitando a 52 semanas.
+async function fetchWeeklyDataRange(startISO, endISO) {
+  const start = new Date(startISO + 'T00:00:00');
+  const end = new Date(endISO + 'T00:00:00');
+  const weeks = Math.max(1, Math.ceil((end - start) / (7 * 86400000)) + 1);
+  return fetchWeeklyData(end, Math.min(weeks, 52));
 }
 
 function renderMonthlyChart({ labels, incomeByBucket, expenseByBucket }) {

@@ -27,6 +27,7 @@ async function loadCategories() {
   renderCategories();
   populateCategorySelect();
   if (typeof populateRecCategorySelect === 'function') populateRecCategorySelect();
+  if (typeof populateTxFilterCategorySelect === 'function') populateTxFilterCategorySelect();
 }
 
 function renderCategories() {
