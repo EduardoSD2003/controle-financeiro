@@ -52,7 +52,9 @@ const txCustomRangeToggle = document.getElementById('tx-custom-range-toggle');
 const txRangeStart = document.getElementById('tx-range-start');
 const txRangeEnd = document.getElementById('tx-range-end');
 const txGroupBy = document.getElementById('tx-group-by');
-const txFilterCategory = document.getElementById('tx-filter-category');
+const txFilterCategoryBtn = document.getElementById('tx-filter-category-btn');
+const txFilterCategoryPicker = document.getElementById('tx-filter-category-picker');
+const txFilterCategoryIds = new Set(); // vazio = todas as categorias
 
 txCustomRangeToggle.addEventListener('change', () => {
   document.getElementById('tx-month-picker').classList.toggle('hidden', txCustomRangeToggle.checked);
@@ -69,22 +71,67 @@ txCustomRangeToggle.addEventListener('change', () => {
 txRangeStart.addEventListener('change', renderTransactionsSection);
 txRangeEnd.addEventListener('change', renderTransactionsSection);
 txGroupBy.addEventListener('change', renderTransactionsSection);
-txFilterCategory.addEventListener('change', renderTransactionsSection);
+
+// --- Filtro de categorias (múltipla escolha) ---
 
 function populateTxFilterCategorySelect() {
-  const currentValue = txFilterCategory.value;
+  // Some categoria removida deixa de contar como filtro ativo.
+  const validIds = new Set(AppState.categories.map((c) => c.id));
+  txFilterCategoryIds.forEach((id) => {
+    if (!validIds.has(id)) txFilterCategoryIds.delete(id);
+  });
+
   const despesas = AppState.categories.filter((c) => c.type === 'despesa');
   const receitas = AppState.categories.filter((c) => c.type === 'receita');
 
-  const optionsFor = (cats) => cats.map((c) => `<option value="${c.id}">${c.icon} ${c.name}</option>`).join('');
+  const checkboxFor = (c) => `
+    <label class="tx-category-option">
+      <input type="checkbox" data-cat-filter-id="${c.id}" ${txFilterCategoryIds.has(c.id) ? 'checked' : ''} />
+      ${c.icon} ${c.name}
+    </label>
+  `;
 
-  txFilterCategory.innerHTML =
-    '<option value="">Todas as categorias</option>' +
-    (despesas.length ? `<optgroup label="Despesas">${optionsFor(despesas)}</optgroup>` : '') +
-    (receitas.length ? `<optgroup label="Receitas">${optionsFor(receitas)}</optgroup>` : '');
+  const groupHtml = (label, cats) =>
+    cats.length
+      ? `<div class="emoji-group"><span class="emoji-group-label">${label}</span>${cats.map(checkboxFor).join('')}</div>`
+      : '';
 
-  txFilterCategory.value = currentValue;
+  txFilterCategoryPicker.innerHTML = groupHtml('Despesas', despesas) + groupHtml('Receitas', receitas);
+  updateTxFilterCategoryLabel();
 }
+
+function updateTxFilterCategoryLabel() {
+  if (txFilterCategoryIds.size === 0) {
+    txFilterCategoryBtn.textContent = 'Todas as categorias';
+  } else if (txFilterCategoryIds.size === 1) {
+    const cat = findCategory([...txFilterCategoryIds][0]);
+    txFilterCategoryBtn.textContent = cat ? `${cat.icon} ${cat.name}` : '1 categoria';
+  } else {
+    txFilterCategoryBtn.textContent = `${txFilterCategoryIds.size} categorias selecionadas`;
+  }
+}
+
+txFilterCategoryBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  txFilterCategoryPicker.classList.toggle('hidden');
+});
+
+txFilterCategoryPicker.addEventListener('change', (e) => {
+  const checkbox = e.target.closest('[data-cat-filter-id]');
+  if (!checkbox) return;
+
+  if (checkbox.checked) txFilterCategoryIds.add(checkbox.dataset.catFilterId);
+  else txFilterCategoryIds.delete(checkbox.dataset.catFilterId);
+
+  updateTxFilterCategoryLabel();
+  renderTransactionsSection();
+});
+
+document.addEventListener('click', (e) => {
+  if (!txFilterCategoryPicker.contains(e.target) && e.target !== txFilterCategoryBtn) {
+    txFilterCategoryPicker.classList.add('hidden');
+  }
+});
 
 async function renderTransactionsSection() {
   let transactions;
@@ -100,8 +147,8 @@ async function renderTransactionsSection() {
     transactions = await fetchTransactions(startISO, endISO);
   }
 
-  if (txFilterCategory.value) {
-    transactions = transactions.filter((tx) => tx.category_id === txFilterCategory.value);
+  if (txFilterCategoryIds.size > 0) {
+    transactions = transactions.filter((tx) => txFilterCategoryIds.has(tx.category_id));
   }
 
   currentMonthTransactions = transactions;
@@ -109,7 +156,19 @@ async function renderTransactionsSection() {
   const emptyMsg = document.getElementById('transactions-empty');
   emptyMsg.classList.toggle('hidden', transactions.length > 0);
 
+  renderTxTotals(transactions);
   renderGroupedTransactions(transactions, txGroupBy.value);
+}
+
+function renderTxTotals(transactions) {
+  const income = transactions.filter((t) => t.type === 'receita').reduce((s, t) => s + Number(t.amount), 0);
+  const expense = transactions.filter((t) => t.type === 'despesa').reduce((s, t) => s + Number(t.amount), 0);
+
+  document.getElementById('tx-totals-income').textContent = formatBRL(income);
+  document.getElementById('tx-totals-expense').textContent = formatBRL(expense);
+  const balanceEl = document.getElementById('tx-totals-balance');
+  balanceEl.textContent = formatBRL(income - expense);
+  balanceEl.className = income - expense >= 0 ? 'positive' : 'negative';
 }
 
 function renderGroupedTransactions(transactions, groupBy) {

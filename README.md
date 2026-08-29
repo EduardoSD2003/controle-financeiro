@@ -82,7 +82,7 @@ transações.
    `https://SEU_USUARIO.github.io/SEU_REPOSITORIO/`
 
 > **Cache do navegador:** os arquivos CSS/JS são carregados com uma
-> versão na URL (`?v=13`). Se você editar esses arquivos no futuro, aumente
+> versão na URL (`?v=14`). Se você editar esses arquivos no futuro, aumente
 > esse número em [`index.html`](index.html) e [`app.html`](app.html) —
 > assim o navegador de quem já visitou o site busca a versão nova em vez
 > de usar a antiga que guardou em cache.

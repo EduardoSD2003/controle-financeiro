@@ -357,6 +357,33 @@ select:focus {
   color: var(--text);
 }
 
+.tx-totals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  margin-bottom: 0.8rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.tx-totals-item strong {
+  margin-left: 0.35rem;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.tx-totals-item strong.positive {
+  color: var(--positive);
+}
+
+.tx-totals-item strong.negative {
+  color: var(--negative);
+}
+
 /* ---------- Cards / stats ---------- */
 
 .cards-grid {
@@ -580,6 +607,36 @@ select:focus {
 
 .emoji-option:hover {
   background: var(--bg);
+}
+
+.tx-category-filter-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 400;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tx-category-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.tx-category-option:hover {
+  background: var(--bg);
+}
+
+.tx-category-option input {
+  width: auto;
+  padding: 0;
 }
 
 /* ---------- Lists ---------- */

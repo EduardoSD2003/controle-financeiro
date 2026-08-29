@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Farofa Fin</title>
-  <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=13" />
-  <link rel="stylesheet" href="css/style.css?v=13" />
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=14" />
+  <link rel="stylesheet" href="css/style.css?v=14" />
 </head>
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <span class="logo"><img src="assets/logo.svg?v=13" alt="" class="logo-img" /> Farofa Fin</span>
+      <span class="logo"><img src="assets/logo.svg?v=14" alt="" class="logo-img" /> Farofa Fin</span>
       <nav class="tabs" id="main-tabs">
         <button class="tab-btn active" data-section="overview">Visão Geral</button>
         <button class="tab-btn" data-section="transactions">Transações</button>
@@ -118,15 +118,22 @@
               <input type="checkbox" id="tx-custom-range-toggle" />
               Período personalizado
             </label>
-            <select id="tx-filter-category">
-              <option value="">Todas as categorias</option>
-            </select>
+            <div class="emoji-field">
+              <button type="button" id="tx-filter-category-btn" class="btn btn-ghost tx-category-filter-btn">Todas as categorias</button>
+              <div id="tx-filter-category-picker" class="emoji-picker hidden"></div>
+            </div>
             <select id="tx-group-by">
               <option value="none">Sem agrupamento</option>
               <option value="day">Totais por dia</option>
               <option value="week">Totais por semana</option>
             </select>
           </div>
+        </div>
+
+        <div class="tx-totals" id="tx-totals">
+          <span class="tx-totals-item">Receitas <strong class="positive" id="tx-totals-income">R$ 0,00</strong></span>
+          <span class="tx-totals-item">Despesas <strong class="negative" id="tx-totals-expense">R$ 0,00</strong></span>
+          <span class="tx-totals-item">Saldo <strong id="tx-totals-balance">R$ 0,00</strong></span>
         </div>
 
         <ul id="transactions-list" class="tx-list"></ul>
@@ -368,15 +375,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-  <script src="js/config.js?v=13"></script>
-  <script src="js/supabaseClient.js?v=13"></script>
-  <script src="js/app.js?v=13"></script>
-  <script src="js/categories.js?v=13"></script>
-  <script src="js/transactions.js?v=13"></script>
-  <script src="js/recurring.js?v=13"></script>
-  <script src="js/investments.js?v=13"></script>
-  <script src="js/dashboard.js?v=13"></script>
-  <script src="js/charts.js?v=13"></script>
-  <script src="js/telegram.js?v=13"></script>
+  <script src="js/config.js?v=14"></script>
+  <script src="js/supabaseClient.js?v=14"></script>
+  <script src="js/app.js?v=14"></script>
+  <script src="js/categories.js?v=14"></script>
+  <script src="js/transactions.js?v=14"></script>
+  <script src="js/recurring.js?v=14"></script>
+  <script src="js/investments.js?v=14"></script>
+  <script src="js/dashboard.js?v=14"></script>
+  <script src="js/charts.js?v=14"></script>
+  <script src="js/telegram.js?v=14"></script>
 </body>
 </html>
